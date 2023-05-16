@@ -499,10 +499,9 @@ class CvTetris extends Canvas {
     CvTetris(Frame frame) {
         this.frame = frame;
         //Mouse Wheel Rotation: change brick direction
-        addMouseWheelListener(new MouseAdapter() {
+        addKeyListener(new KeyListener() {
             @Override
-            public void mouseWheelMoved(MouseWheelEvent evt) {
-                super.mouseWheelMoved(evt);
+            public void keyPressed(KeyEvent e) {
                 boolean repaintjudge = true;
                 if (bottom) {
                     return;
@@ -515,7 +514,7 @@ class CvTetris extends Canvas {
                         return;
                     }
                 }
-                if (evt.getWheelRotation() < 0) {
+                if (e.getKeyCode()==KeyEvent.VK_UP) {
                     direction = (direction + 1);
                     if (direction < 0) {
                         direction = direction + 4;
@@ -527,7 +526,7 @@ class CvTetris extends Canvas {
                         repaint();
                     }
 
-                } else {
+                } else if (e.getKeyCode()==KeyEvent.VK_DOWN){
                     direction = (direction - 1);
                     if (direction < 0) {
                         direction = direction + 4;
