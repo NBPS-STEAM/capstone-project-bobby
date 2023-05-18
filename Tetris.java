@@ -1091,7 +1091,7 @@ class CvTetris extends Canvas {
                     g.drawRect(iX(nextx), iY(nexty), iL(10), iL(10));
                 }
             }
-
+/* 
         g.drawString("Bonus Shapes:",iX(110),iY(100));
         g.setColor(new Color(115,115,115));
         g.fillRect(iX(110), iY(90), iL(10), iL(10));
@@ -1156,7 +1156,7 @@ class CvTetris extends Canvas {
         g.drawRect(iX(160), iY(-30), iL(10), iL(10));
         g.drawRect(iX(170), iY(-40), iL(10), iL(10));
         g.drawRect(iX(150), iY(-40), iL(10), iL(10));
-
+*/
 
 
 
