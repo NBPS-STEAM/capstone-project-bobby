@@ -539,6 +539,18 @@ class CvTetris extends Canvas {
                     }
                 }
             }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'keyReleased'");
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'keyTyped'");
+            }
         });
 
 
@@ -709,6 +721,16 @@ class CvTetris extends Canvas {
                     if(d_value>1)
                     d_value=0;
                 }
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'keyReleased'");
+            }
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'keyTyped'");
             }
         });
         
