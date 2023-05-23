@@ -21,6 +21,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Hashtable;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +34,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.BorderUIResource;
+
+import java.io.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Tetris extends Frame {
     public static void main(String[] args) {
@@ -414,10 +422,10 @@ class setting {
     //scoring factor
     static int M = 10;
     //number of rows required for each Level of difficulty
-    static int N = 20;
+    static int N = 3;
     static int lines = 0;
     //speed factor
-    static float S = 0.1f;
+    static float S = 1.5f;
 
     static int level = 1;
     //speed
@@ -461,7 +469,7 @@ class CvTetris extends Canvas {
             } else {
                 timer = new Timer();
                 float interval = (float) 1000 / (1f + setting.S * (float) setting.level);
-                timer.scheduleAtFixedRate(new GameTimerTask(this), 0, (int) interval);
+                timer.scheduleAtFixedRate(new GameTimerTask(this), 0, (int)interval);
             }
             this.judgemainzreanow = judgemainzreanow;
         }
@@ -590,6 +598,7 @@ class CvTetris extends Canvas {
                                             return;
                                         }
                                     }
+                                    //if(mainarea[mainbrickx-1][mainbricky]!=0)return;
                                     mainbrickx = mainbrickx - 1;
                                     mainbrick.setLocation(mainbrickx, mainbricky);
                                     mainbrick.setBricks();
@@ -600,6 +609,7 @@ class CvTetris extends Canvas {
                                     break;
                                 //right button on mouse
                                 case KeyEvent.VK_RIGHT:
+                                //speed drop
                                     if (bottom) {
                                         return;
                                     }
@@ -615,6 +625,13 @@ class CvTetris extends Canvas {
                                     if (repaintjudge2) {
                                         repaint();
                                     }
+                                    break;
+                                case KeyEvent.VK_SPACE:
+                                    if (bottom) {
+                                        return;
+                                    }
+                                    fall();
+                                    repaint();
                                     break;
                             }
                         }
@@ -694,6 +711,7 @@ class CvTetris extends Canvas {
                 }
             }
         });
+        
         timer = new Timer();
         float interval = (float) 1000 / (1f + setting.S * (float) setting.level);
         timer.scheduleAtFixedRate(new GameTimerTask(this), 0, (int) interval);
@@ -709,29 +727,7 @@ class CvTetris extends Canvas {
         }
 
         //speed drop
-        
-        addKeyListener(new KeyListener() {
-            double d_value = 0;
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode()==KeyEvent.VK_SPACE)
-                {
-                    d_value+=0.01;
-                    //mainbricky = mainbricky + d_value/1;
-                    if(d_value>1)
-                    d_value=0;
-                }
-            }
-            @Override
-            public void keyReleased(KeyEvent e) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'keyReleased'");
-            }
-            @Override
-            public void keyTyped(KeyEvent e) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'keyTyped'");
-            }
-        });
+        //timer.schedule(new GameTimerTask(this), 100);
         
         mainbricky = mainbricky + 1;
         mainbrick.setLocation(mainbrickx, mainbricky);
@@ -739,13 +735,14 @@ class CvTetris extends Canvas {
         mainbrick.setDirection(direction);
         for (int x = 0; x < 4; x++) {
             //this loop is end
-            if (fallarea[mainbrick.brickarray[x][0]][mainbrick.brickarray[x][1]] != 0) {
+            if (fallarea[mainbrick.brickarray[x][0]][mainbrick.brickarray[x][1]] != 0) 
+            {
                 bottom = true;
                 mainbricky = mainbricky - 1;
                 mainbrick.setLocation(mainbrickx, mainbricky);
                 mainbrick.setBricks();
                 mainbrick.setDirection(direction);
-                //save mainarea into fallarea
+                //save mainarea into fallarea              
                 for (int y = 0; y < 4; y++) {
                     fallarea[mainbrick.brickarray[y][0]][mainbrick.brickarray[y][1]] = mainbrick.type;
                 }
@@ -789,13 +786,34 @@ class CvTetris extends Canvas {
                     check = true;
                 }
                 //Game over judge
-                for (int top = 0; top < (int) setting.width; top++) {
-                    if (fallarea[top][1] != 0) {
+                for (int top = 0; top < (int) setting.width; top++) 
+                {
+                    if (fallarea[top][1] != 0) 
+                    {
                         System.out.println("Game Over");
-                        System.exit(0);
-                        //Game over
+                        int highScore = 0;
+                        try {
+                            File myObj = new File("highScore.txt");
+                            Scanner myReader = new Scanner(myObj);
+                            String hs = myReader.nextLine();
+                            highScore = Integer.parseInt(hs);
+                            myReader.close();
+                        } catch (FileNotFoundException e) {
+                            System.out.println("An error occurred.");
+                            e.printStackTrace();
+                        }
+
+                        try {
+                            FileWriter myWriter = new FileWriter("highScore.txt");
+                            if(setting.score>highScore)myWriter.write(setting.score);
+                            myWriter.close();
+                          } catch (IOException e) {
+                            System.out.println("An error occurred.");
+                            e.printStackTrace();
+                        }
                     }
                 }
+        
 
 
                 //new falling brick
@@ -809,7 +827,6 @@ class CvTetris extends Canvas {
                 mainbrick.setDirection(direction);
                 bottom = false;
                 break;
-
             }
         }
 
@@ -1112,82 +1129,29 @@ class CvTetris extends Canvas {
                     g.drawRect(iX(nextx), iY(nexty), iL(10), iL(10));
                 }
             }
-/* 
-        g.drawString("Bonus Shapes:",iX(110),iY(100));
-        g.setColor(new Color(115,115,115));
-        g.fillRect(iX(110), iY(90), iL(10), iL(10));
-        g.fillRect(iX(110), iY(80), iL(10), iL(10));
-        g.fillRect(iX(120), iY(80), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(110), iY(90), iL(10), iL(10));
-        g.drawRect(iX(110), iY(80), iL(10), iL(10));
-        g.drawRect(iX(120), iY(80), iL(10), iL(10));
-
-        g.setColor(new Color(41,163,41));
-        g.fillRect(iX(140), iY(90), iL(10), iL(10));
-        g.fillRect(iX(150), iY(80), iL(10), iL(10));
-        g.fillRect(iX(160), iY(80), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(140), iY(90), iL(10), iL(10));
-        g.drawRect(iX(150), iY(80), iL(10), iL(10));
-        g.drawRect(iX(160), iY(80), iL(10), iL(10));
-
-        g.setColor(new Color(255,102,153));
-        g.fillRect(iX(140), iY(60), iL(10), iL(10));
-        g.fillRect(iX(150), iY(60), iL(10), iL(10));
-        g.fillRect(iX(160), iY(60), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(140), iY(60), iL(10), iL(10));
-        g.drawRect(iX(150), iY(60), iL(10), iL(10));
-        g.drawRect(iX(160), iY(60), iL(10), iL(10));
-
-        g.setColor(new Color(255,153,0));
-        g.fillRect(iX(120), iY(60), iL(10), iL(10));
-        g.fillRect(iX(110), iY(50), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(120), iY(60), iL(10), iL(10));
-        g.drawRect(iX(110), iY(50), iL(10), iL(10));
-
-        g.setColor(new Color(51,153,102));
-        g.fillRect(iX(110), iY(30), iL(10), iL(10));
-        g.fillRect(iX(110), iY(20), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(110), iY(30), iL(10), iL(10));
-        g.drawRect(iX(110), iY(20), iL(10), iL(10));
-
-        g.setColor(new Color(0,0,102));
-        g.fillRect(iX(140), iY(30), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(140), iY(30), iL(10), iL(10));
-
-        g.setColor(new Color(51,102,153));
-        g.fillRect(iX(130), iY(0), iL(10), iL(10));
-        g.fillRect(iX(120), iY(-10), iL(10), iL(10));
-        g.fillRect(iX(110), iY(-20), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(130), iY(0), iL(10), iL(10));
-        g.drawRect(iX(120), iY(-10), iL(10), iL(10));
-        g.drawRect(iX(110), iY(-20), iL(10), iL(10));
-
-        g.setColor(new Color(102,102,51));
-        g.fillRect(iX(160), iY(-30), iL(10), iL(10));
-        g.fillRect(iX(170), iY(-40), iL(10), iL(10));
-        g.fillRect(iX(150), iY(-40), iL(10), iL(10));
-        g.setColor(Color.black);
-        g.drawRect(iX(160), iY(-30), iL(10), iL(10));
-        g.drawRect(iX(170), iY(-40), iL(10), iL(10));
-        g.drawRect(iX(150), iY(-40), iL(10), iL(10));
-*/
-
-
-
 
         //score band
+
+        
         Font infoFont = new Font("Verdana", Font.BOLD, iF(10));
+        int highScore = 0;
+        try {
+            File myObj = new File("highScore.txt");
+            Scanner myReader = new Scanner(myObj);
+            String hs = myReader.nextLine();
+            highScore = Integer.parseInt(hs);
+            myReader.close();
+          } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+
         g.setFont(infoFont);
-        g.drawString("Level:     " + setting.level, iX(20), iY(20));
-        g.drawString("Lines:     " + setting.lines, iX(20), iY(0));
-        g.drawString("Score:     " + setting.score, iX(20), iY(-20));
+        g.drawString("Level:     " + setting.level, iX(20), iY(30));
+        g.drawString("Lines:     " + setting.lines, iX(20), iY(10));
+        g.drawString("Score:     " + setting.score, iX(20), iY(-10));
+        g.drawString("High Score:     " + highScore, iX(20), iY(-30));
+
         //quit
         g.drawString("QUIT", iX(35), iY(-95));
         //start
@@ -1417,7 +1381,7 @@ class CvTetris extends Canvas {
                             public void stateChanged(ChangeEvent e) {
                                 setting.brick_size = slider.getValue();
                                 v.setText(String.format("%02d", setting.brick_size));
-                                repaintDialog();
+                                //repaintDialog();
                             }
                         });
                         row.add(slider);
