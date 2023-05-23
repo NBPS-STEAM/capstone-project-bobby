@@ -717,6 +717,8 @@ class CvTetris extends Canvas {
         timer.scheduleAtFixedRate(new GameTimerTask(this), 0, (int) interval);
     }
 
+    public static int highScore = 0;
+    public static boolean gameOver =false;
 
     public void fall() {
         if (mainbrick == null) {
@@ -791,26 +793,17 @@ class CvTetris extends Canvas {
                     if (fallarea[top][1] != 0) 
                     {
                         System.out.println("Game Over");
-                        int highScore = 0;
-                        try {
-                            File myObj = new File("highScore.txt");
-                            Scanner myReader = new Scanner(myObj);
-                            String hs = myReader.nextLine();
-                            highScore = Integer.parseInt(hs);
-                            myReader.close();
-                        } catch (FileNotFoundException e) {
-                            System.out.println("An error occurred.");
-                            e.printStackTrace();
-                        }
-
                         try {
                             FileWriter myWriter = new FileWriter("highScore.txt");
-                            if(setting.score>highScore)myWriter.write(setting.score);
+                            if(setting.score>=highScore)myWriter.write(Integer.toString(setting.score));
                             myWriter.close();
                           } catch (IOException e) {
                             System.out.println("An error occurred.");
                             e.printStackTrace();
                         }
+
+                        gameOver = true;
+                        repaint();
                     }
                 }
         
@@ -879,6 +872,16 @@ class CvTetris extends Canvas {
     public void paint(Graphics g) {
         initgr();
         //int fallarea[][]= new int[(int)setting.width+2][(int)setting.length+1];
+
+        if(gameOver==true)
+        {
+            g.clearRect(centerX, centerY, WIDTH, HEIGHT);
+            Font infoFont = new Font("Verdana", Font.BOLD, iF(30));
+            g.setFont(infoFont);
+            g.drawString("Game Over :(", iX(-100), iY(25));
+            g.drawString("Score: " + setting.score, iX(-100), iY(-25));
+            return;
+        }
 
         //define border
         for (int x = 0; x < setting.width; x++) {
@@ -1134,16 +1137,26 @@ class CvTetris extends Canvas {
 
         
         Font infoFont = new Font("Verdana", Font.BOLD, iF(10));
-        int highScore = 0;
+
         try {
             File myObj = new File("highScore.txt");
+            myObj.createNewFile();
             Scanner myReader = new Scanner(myObj);
-            String hs = myReader.nextLine();
-            highScore = Integer.parseInt(hs);
+            String hs;
+            if (myReader.hasNextLine()) 
+            {
+                hs = myReader.nextLine();
+                highScore = Integer.parseInt (hs);
+            }
             myReader.close();
-          } catch (FileNotFoundException e) {
+        } 
+        catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
+        }
+        catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();           
         }
 
         g.setFont(infoFont);
